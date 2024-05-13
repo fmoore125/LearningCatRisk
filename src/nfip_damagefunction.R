@@ -72,12 +72,26 @@ colnames(tidemax)[2:7]=paste0(colnames(tidemax)[2:7],"_tide")
 
 fulldat=merge(fulldat,tidemax)
 
-#regressions
+#-----------Damage function Regression---------------------
 
 #limit to 2009 data and later, when policy / coverage data is available
 fulldat_2009=fulldat%>%filter(year>=2009)
 
-mod=lm(I(log(totalclaims))~max+I(log(totalcoverage))+max_tide+I(max_tide^2),data=fulldat_2009)
+mod=lm(I(log(totalclaims))~max+I(log(totalcoverage))+max_tide,data=fulldat_2009)
+
+#create extreme rainfall damage function based on 2023 coverage levels and average tide value
+#smearing term for non-parametric Duan smearing retransformation
+smear=mean(exp(mod$residuals))
+
+intercept=mod$coefficients[1]+mod$coefficients[3]*log(fulldat$totalcoverage[which(fulldat$year==2023)])+mod$coefficients[4]*mean(fulldat_2009$max_tide)
+
+rain_coef=mod$coefficients[2]
+
+predictfunc=function(rain,coef=rain_coef,interceptterm=intercept,smearterm=smear){
+  return(exp(interceptterm+rain*rain_coef)*smearterm)
+}
+
+save(smear,intercept,rain_coef,predictfunc,mod,fulldat_2009,file="Data/NYCdamagefunc.Rdat")
 
 
 
