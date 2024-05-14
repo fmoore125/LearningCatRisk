@@ -3,7 +3,7 @@ library(parallel)
 library(tidyverse)
 
 
-dams=fread("illustration2_empirical.csv")
+dams=fread("Data/illustration2_empirical.csv")
 
 #--------------does diversification help?---------------------------
 

@@ -22,7 +22,7 @@ yearmax=dat%>%
 load("Data/NYCdamagefunc.Rdat")
 damagefunc=function(rain,predictfunction=predictfunc,scaling=500000000){return(predictfunction(rain)/scaling)}
 
-#---------Illustration 2: Known Non-stationarity -----------
+#---------Illustration 2: Possible Non-stationarity -----------
 
 datlength=30
 nyear=nrow(yearmax)
@@ -128,4 +128,4 @@ rain_stationary=as.vector(mapply(rweibull,n=rainsamp,shape=climshape,scale=scale
 
 dams_nonstationary=damagefunc(rain_nonstationary);dams_stationary=damagefunc(rain_stationary)
 
-fwrite(data.frame(non_stationary=dams_nonstationary,stationary=dams_stationary),file="illustration2_empirical.csv")
+fwrite(data.frame(non_stationary=dams_nonstationary,stationary=dams_stationary),file="Data/illustration2_empirical.csv")

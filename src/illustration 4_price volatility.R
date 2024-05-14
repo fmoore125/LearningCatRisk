@@ -111,7 +111,7 @@ dams_nonstationary=damagefunc(rain_nonstationary);dams_stationary=damagefunc(rai
 
 premiums=data.frame(type=c("Assumed Stationarity","Possible Non-Stationarity"),meandams=c(mean(dams_stationary),mean(dams_nonstationary)),simulation=rep("Extreme",2))
 
-dams_original=fread("illustration2_empirical.csv")
+dams_original=fread("Data/illustration2_empirical.csv")
 
 premiums=rbind(premiums,data.frame(type=c("Assumed Stationarity","Possible Non-Stationarity"),meandams=c(mean(dams_original$stationary),mean(dams_original$non_stationary)),simulation=rep("Original",2)))
 #normalize by stationary original premiums

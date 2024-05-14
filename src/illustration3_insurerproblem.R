@@ -2,7 +2,7 @@ library(data.table)
 library(parallel)
 library(tidyverse)
 
-dams=fread("illustration2_empirical.csv")
+dams=fread("Data/illustration2_empirical.csv")
 
 #make table comparing elements of damage distributions
 anydamage=round(sum(dams$non_stationary!=0)/sum(dams$stationary!=0)*100)
