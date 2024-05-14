@@ -18,14 +18,9 @@ yearmax=dat%>%
   group_by(year)%>%
   dplyr::summarise(maxpprcp=max(PRCP))
 
-#hypothetical damage function
-damagefunc=function(rain,thresh=threshold,jump=0.03){
-  dams=ifelse(rain<thresh,0,jump+exp(rain-1.85*thresh))
-  return(dams)
-}
-
-#find top 5% of whole record for threshold
-threshold=quantile(yearmax$maxpprcp,0.95)
+#empirical damage function
+load("Data/NYCdamagefunc.Rdat")
+damagefunc=function(rain,predictfunction=predictfunc,scaling=500000000){return(predictfunction(rain)/scaling)}
 
 #---------Illustration 2: Known Non-stationarity -----------
 
@@ -133,4 +128,4 @@ rain_stationary=as.vector(mapply(rweibull,n=rainsamp,shape=climshape,scale=scale
 
 dams_nonstationary=damagefunc(rain_nonstationary);dams_stationary=damagefunc(rain_stationary)
 
-fwrite(data.frame(non_stationary=dams_nonstationary,stationary=dams_stationary),file="illustration2.csv")
+fwrite(data.frame(non_stationary=dams_nonstationary,stationary=dams_stationary),file="illustration2_empirical.csv")
