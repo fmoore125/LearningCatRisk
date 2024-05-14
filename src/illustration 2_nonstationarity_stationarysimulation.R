@@ -31,6 +31,9 @@ climatology=yearmax[(nyear-datlength+1):nyear,]
 climdist=fitdist(climatology$maxpprcp,"weibull",method="mle",lower=c(0,0))
 climshape=climdist$estimate[1] #known shape parameter
 
+#create artificial climatology from stationary distribution
+climatology$maxpprcp=rweibull(n=datlength,shape=climshape,scale=climdist$estimate[2])
+
 #---establish initial period prior over shape parameter ------
 priorclim=yearmax[(nyear-2*datlength+1):(nyear-datlength),]
 priorpriorclim=yearmax[(nyear-3*datlength+1):(nyear-2*datlength),]
@@ -100,39 +103,16 @@ quants=as.data.frame(rbind(quantile(scale_2024,probs=c(0.025,0.975)),quantile(sc
 quants$type=c("Non-Stationary","Stationary")
 quants=pivot_longer(quants,cols=1:2,names_to="Quantile")
 
-posteriors_real=data.frame(scale=c(scale_2024,scale_postdist_stationary),type=c(rep("Non-Stationary",postnsamps),rep("Stationary",postnsamps)),climatology="Real")
-
-#add posteriors from constructed stationary distribution for comparison
-posteriors=fread(file="Data/constructedstationaryposterior.csv")
-posteriors=rbind(posteriors,posteriors_real)
-
 #figure of posterior scale parameters
-a=ggplot(data=posteriors)+geom_density(aes(x=scale,group=interaction(type,climatology),col=type,lty=climatology),lwd=0.8)+
+a=ggplot(data=data.frame(scale=c(scale_2024,scale_postdist_stationary),type=c(rep("Non-Stationary",postnsamps),rep("Stationary",postnsamps))))+geom_density(aes(x=scale,group=type,col=type),lwd=0.8)+
   theme_classic()+theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),plot.margin=unit(c(0.25,0,0.25,0.25),"inches"))+
-  scale_linetype_manual(values=c(3,1),labels=c("Constructed Stationary","Real"),name="Climatology")+
-  labs(y="Probability Density",x="Posterior Scale Parameter")+scale_color_manual(values=c("#FFE74C","#44BBA4"),labels=c("Potential Non-Stationarity","Assumed Stationarity"),name="Learning Model")+
+  labs(y="Probability Density",x="Posterior Scale Parameter")+scale_color_manual(values=c("#FFE74C","#44BBA4"),labels=c("Potential Non-Stationarity","Assumed Stationarity"),name="")+
   coord_cartesian(xlim = c(2.9, 5.2), clip = "off")+
-  #annotate("text",x=2.9,y=1.9,label="a)",size=8)+
+  annotate("text",x=2.9,y=1.9,label="a)",size=8)+
   geom_vline(data=quants,aes(xintercept=value,col=type),lty=2)
 
-# #show upper 95th percentile of the posterior rainfall distribution over the damage function
-# rain=seq(0,9,length.out=1000)
-# upper95_nonstationary=dweibull(rain,shape=climshape,scale=quantile(scale_2024,0.975))
-# upper95_stationary=dweibull(rain,shape=climshape,scale=quantile(scale_postdist_stationary,0.975))
-# 
-# upper95=data.frame(type=c(rep("Assumed Stationarity",length(rain)),rep("Potential Non-Stationarity",length(rain))),dist=c(upper95_stationary,upper95_nonstationary),rain=rep(rain,2))
-# b=ggplot(upper95,aes(x=rain,y=dist,group=type,col=type))+geom_line()+theme_classic()+
-#   theme(axis.text.y=element_blank(),axis.ticks.y=element_blank(),plot.margin=unit(c(0.25,0,0.25,0.25),"inches"))+
-#   scale_color_manual(values=c("#FFE74C","#44BBA4"),name="")+labs(y="",x="Daily Rainfall (Annual Max, inches)")+
-#   geom_line(data=data.frame(rain=rain,dam=damagefunc(rain)),aes(x=rain,y=dam),inherit.aes = FALSE,col="tomato3")+
-#   annotate("text",x=c(0.2,7.5),y=c(0.2,0.3),label=c("b)","Damage\nFunction"),col=c("black","tomato3"),size=c(8,4))
-#   
-  
-#calculate expected damages in 2024 with and without stationarity
-rainsamp=10000
-rain_nonstationary=as.vector(mapply(rweibull,n=rainsamp,shape=climshape,scale=scale_2024))
-rain_stationary=as.vector(mapply(rweibull,n=rainsamp,shape=climshape,scale=scale_postdist_stationary))
+fwrite(data.frame(scale=c(scale_2024,scale_postdist_stationary),type=c(rep("Non-Stationary",postnsamps),rep("Stationary",postnsamps)),climatology="Constructed_Stationary"),file="Data/constructedstationaryposterior.csv")
 
-dams_nonstationary=damagefunc(rain_nonstationary);dams_stationary=damagefunc(rain_stationary)
+   
 
-fwrite(data.frame(non_stationary=dams_nonstationary,stationary=dams_stationary),file="Data/illustration2_empirical.csv")
+
