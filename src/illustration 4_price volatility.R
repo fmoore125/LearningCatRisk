@@ -19,14 +19,9 @@ yearmax=dat%>%
   group_by(year)%>%
   dplyr::summarise(maxpprcp=max(PRCP))
 
-#hypothetical damage function
-damagefunc=function(rain,thresh=threshold,jump=0.03){
-  dams=ifelse(rain<thresh,0,jump+exp(rain-1.85*thresh))
-  return(dams)
-}
-
-#find top 5% of whole record for threshold
-threshold=quantile(yearmax$maxpprcp,0.95)
+#empirical damage function
+load("Data/NYCdamagefunc.Rdat")
+damagefunc=function(rain,predictfunction=predictfunc,scaling=500000000){return(predictfunction(rain)/scaling)}
 
 
 #---------Illustration 2: Known Non-stationarity -----------
@@ -40,6 +35,7 @@ climshape=climdist$estimate[1] #known shape parameter
 
 #---establish initial period prior over shape parameter ------
 priorclim=yearmax[(nyear-2*datlength+1):(nyear-datlength),]
+priorpriorclim=yearmax[(nyear-3*datlength+1):(nyear-2*datlength),]
 
 #find initial period posterior over scale parameter based on prior 30 year climatology
 prior_shape=1.5
@@ -115,7 +111,7 @@ dams_nonstationary=damagefunc(rain_nonstationary);dams_stationary=damagefunc(rai
 
 premiums=data.frame(type=c("Assumed Stationarity","Possible Non-Stationarity"),meandams=c(mean(dams_stationary),mean(dams_nonstationary)),simulation=rep("Extreme",2))
 
-dams_original=fread("illustration2.csv")
+dams_original=fread("illustration2_empirical.csv")
 
 premiums=rbind(premiums,data.frame(type=c("Assumed Stationarity","Possible Non-Stationarity"),meandams=c(mean(dams_original$stationary),mean(dams_original$non_stationary)),simulation=rep("Original",2)))
 #normalize by stationary original premiums

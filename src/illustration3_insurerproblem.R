@@ -2,8 +2,7 @@ library(data.table)
 library(parallel)
 library(tidyverse)
 
-
-dams=fread("illustration2.csv")
+dams=fread("illustration2_empirical.csv")
 
 #make table comparing elements of damage distributions
 anydamage=round(sum(dams$non_stationary!=0)/sum(dams$stationary!=0)*100)
@@ -40,13 +39,10 @@ yearmax=dat%>%
   group_by(year)%>%
   dplyr::summarise(maxpprcp=max(PRCP))
 
-rainthreshold=quantile(yearmax$maxpprcp,0.95)
+#empirical damage function
+load("Data/NYCdamagefunc.Rdat")
+damagefunc=function(rain,predictfunction=predictfunc,scaling=500000000){return(predictfunction(rain)/scaling)}
 
-#hypothetical damage function
-damagefunc=function(rain,thresh=rainthreshold,jump=0.03){
-  dams=ifelse(rain<thresh,0,jump+exp(rain-1.85*thresh))
-  return(dams)
-}
 threshold=-1*max(damagefunc(yearmax$maxpprcp))
 
 
@@ -58,7 +54,7 @@ securityloss_nonstationary=ifelse(netposition_nonstationary>0,0,ifelse(netpositi
 #change in expected loss as fraction of total
 el_stationary=(sum(securityloss_stationary)/length(securityloss_stationary))/abs(threshold);el_nonstationary=sum(securityloss_nonstationary)/length(securityloss_nonstationary)/abs(threshold)
 
-#expected loss increases from 2.3% to 3.7%
+#expected loss increases from 2.5% to 3.5%
 
 #tail value at risk99
 var99_stationary=quantile(securityloss_stationary,0.01);var99_nonstationary=quantile(securityloss_nonstationary,0.01)
@@ -68,14 +64,12 @@ tvar99_nonstationary=sum(securityloss_nonstationary[which(securityloss_nonstatio
 #using ILS pricing model from Land and Mahul - premium spread = expected_loss + 0.054 * TVaR99
 spread_stationary=abs(el_stationary)+0.054*abs(tvar99_stationary);spread_nonstationary=abs(el_nonstationary)+0.054*abs(tvar99_nonstationary)
 
-#spread increases from 5.3% to 8.1% under non-stationarity
+#spread increases from 5.6% to 8.0% under non-stationarity
 
 #figure showing claim variance
-hist(securityloss_nonstationary[which(securityloss_nonstationary<0)]/abs(threshold)*100,col="#FFE74C",xlab="Collateral Loss (%)", yaxt="n",ylab="",main="")
-hist(securityloss_stationary[which(securityloss_stationary<0)]/abs(threshold)*100, col="#44BBA4",add=TRUE)
-legend("topleft",fill=c("#44BBA4","#FFE74C"),legend=c("Assumed Stationarity (P=8.1%)","Potential Non-Stationarity (P=12.5%)"),bty="n",cex=1.4)
-
-
+hist(securityloss_stationary/abs(threshold)*100,col=rgb(t(col2rgb("#44BBA4"))/255,alpha=0.5),xlab="Collateral Loss (%)", yaxt="n",ylab="",main="")
+hist(securityloss_nonstationary/abs(threshold)*100, col=rgb(t(col2rgb("#FFE74C"))/255,alpha=0.5),add=TRUE)
+legend("topleft",fill=c("#44BBA4","#FFE74C"),legend=c("Assumed Stationarity","Potential Non-Stationarity"),bty="n",cex=1.4)
 
 #### old version
 # #consider an indemnity security - insurer pays a return on an amount of capital provided by investors. This capital is released to insurer in the event of losses

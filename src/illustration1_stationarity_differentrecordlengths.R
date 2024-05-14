@@ -14,14 +14,9 @@ yearmax=dat%>%
   group_by(year)%>%
   dplyr::summarise(maxpprcp=max(PRCP))
 
-#hypothetical damage function
-damagefunc=function(rain,thresh=threshold,jump=0.03){
-  dams=ifelse(rain<thresh,0,jump+exp(rain-1.85*thresh))
-  return(dams)
-}
-
-#find top 5% of whole record for threshold
-threshold=quantile(yearmax$maxpprcp,0.95)
+#empirical damage function based on NYC NFIP damages (estimation in nfip_damagefunction.R")
+load("Data/NYCdamagefunc.Rdat")
+damagefunc=function(rain,predictfunction=predictfunc,scaling=500000000){return(predictfunction(rain)/scaling)}
 
 #make some plots
 x11()
