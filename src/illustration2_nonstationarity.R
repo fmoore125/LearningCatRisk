@@ -113,7 +113,7 @@ a=ggplot(data=posteriors)+geom_density(aes(x=scale,group=interaction(type,climat
   labs(y="Probability Density",x="Posterior Scale Parameter")+scale_color_manual(values=c("#FFE74C","#44BBA4"),labels=c("Potential Non-Stationarity","Assumed Stationarity"),name="Learning Model")+
   coord_cartesian(xlim = c(2.9, 5.2), clip = "off")+
   #annotate("text",x=2.9,y=1.9,label="a)",size=8)+
-  geom_vline(data=quants,aes(xintercept=value,col=type),lty=2)
+  geom_vline(data=quants,aes(xintercept=value,col=type),lty=1)
 
 # #show upper 95th percentile of the posterior rainfall distribution over the damage function
 # rain=seq(0,9,length.out=1000)

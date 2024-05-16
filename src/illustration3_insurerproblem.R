@@ -66,9 +66,20 @@ spread_stationary=abs(el_stationary)+0.054*abs(tvar99_stationary);spread_nonstat
 
 #spread increases from 5.6% to 8.0% under non-stationarity
 
+#create frequencies to plot on same plot side by side
+freq=data.frame(stationary=table(cut(securityloss_stationary/abs(threshold)*100,breaks=seq(-100,0,by=10))),nonstationary=table(cut(securityloss_nonstationary/abs(threshold)*100,breaks=seq(-100,0,by=10))))
+freq[,c(2,4)]=freq[,c(2,4)]/sum(freq[,c(2,4)])
+freq=freq[,-3];freq[,1]=seq(-90,0,by=10)
+freq=pivot_longer(freq,cols=c(2,3))
+
+a=ggplot(freq,aes(x=stationary.Var1,y=value,group=name,fill=name))+geom_bar(stat="identity",position=position_dodge(),width=10,col="black")+theme_classic()+
+  scale_fill_manual(values=c("#FFE74C","#44BBA4"),labels=c("Potential Non-Stationarity","Assumed Stationarity"),name="Learning Model")+
+  labs(x="Collateral Loss (%)",y="Frequency")+theme(text=element_text(size=18))
+
 #figure showing claim variance
+par(mfrow=c(1,2))
 hist(securityloss_stationary/abs(threshold)*100,col=rgb(t(col2rgb("#44BBA4"))/255,alpha=0.5),xlab="Collateral Loss (%)", yaxt="n",ylab="",main="")
-hist(securityloss_nonstationary/abs(threshold)*100, col=rgb(t(col2rgb("#FFE74C"))/255,alpha=0.5),add=TRUE)
+hist(securityloss_nonstationary/abs(threshold)*100, col=rgb(t(col2rgb("#FFE74C"))/255,alpha=0.5))
 legend("topleft",fill=c("#44BBA4","#FFE74C"),legend=c("Assumed Stationarity","Potential Non-Stationarity"),bty="n",cex=1.4)
 
 #### old version

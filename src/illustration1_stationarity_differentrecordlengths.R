@@ -34,7 +34,7 @@ climshape=climdist$estimate[1] #known shape parameter
 rain=seq(0,9,length.out=1000)
 plot(rain,dweibull(rain,climdist$estimate[1],climdist$estimate[2]),type="l",ylab="",yaxt='n', xlab="Daily Rainfall (Annual Max, inches)",col="navy",mar=c(5,4,3,2))
 lines(rain,damagefunc(rain),type="l",col="tomato3")
-text(x=c(1,7.2),y=c(0.18,0.15),labels=c("Rainfall\nDistribution","Damage\nFunction"),col=c("navy","tomato3"))
+text(x=c(1,7),y=c(0.18,0.15),labels=c("Rainfall\nDistribution","Damage\nFunction"),col=c("navy","tomato3"))
 mtext("b)",side=2,at=0.25,las=1,line=2,cex=2)
 
 damagedist=damagefunc(rweibull(10000,climdist$estimate[1],climdist$estimate[2]))
